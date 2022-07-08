@@ -17,4 +17,4 @@ def energy(state, time):
 
 @njit(nogil=True)
 def decide(state, time):
-    return None  # boolean, new state
+    return None  # boolean, new state, dt

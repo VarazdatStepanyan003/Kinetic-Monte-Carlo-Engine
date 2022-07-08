@@ -1,6 +1,7 @@
-from numba import njit
+from numba import njit, prange
 import numpy as np
 import test_system_ising as system
+from helpers import binary_search
 
 
 @njit(nogil=True)
@@ -14,11 +15,14 @@ def simulate(n_of_steps, max_time):
             observables[i] = observables[i - 1]
             time[i] = time[i - 1]
             continue
-        d, n_state = system.decide(state, time[i])
+        d, n_state, dt = system.decide(state, time[i])
         if d:
             state = n_state
-        observables[i] = system.observables(state, time[i])
-    return observables
+            observables[i] = system.observables(state, time[i])
+        else:
+            observables[i] = observables[i - 1]
+        time[i] = time[i - 1] + dt
+    return time, observables
 
 
 @njit(nogil=True)
@@ -35,7 +39,7 @@ def simulate_keepstate(n_of_steps, max_time):
             observables[i] = observables[i - 1]
             time[i] = time[i - 1]
             continue
-        d, n_state = system.decide(state, time[i])
+        d, n_state, dt = system.decide(state, time[i])
         if d:
             state = n_state
             states[i] = np.copy(state)
@@ -43,4 +47,32 @@ def simulate_keepstate(n_of_steps, max_time):
         else:
             states[i] = states[i - 1]
             observables[i] = observables[i - 1]
-    return states, observables
+        time[i] = time[i - 1] + dt
+    return time, observables, states
+
+
+@njit(parallel=True)
+def many_simulate(n_of_steps, max_time, n_of_repetitions):
+    times = np.zeros((n_of_repetitions, n_of_steps + 1))
+    observabless = np.zeros((n_of_repetitions, n_of_steps + 1, system.n_of_observables))
+    for i in prange(n_of_repetitions):
+        times[i], observabless[i] = simulate(n_of_steps, max_time)
+    return times, observabless
+
+
+@njit(nogil=True)
+def smooth(max_time, dt, times, valuess):
+    time = np.arange(0, max_time + dt, dt)
+    values = np.zeros(len(time))
+    k = np.zeros(len(time))
+    for i in range(len(valuess)):
+        for j in range(len(valuess[0])):
+            ind = binary_search(times[i][j], time)
+            k[ind] += 1
+            values[ind] += valuess[i][j]
+    for i in range(len(time)):
+        if k[i] != 0:
+            values[i] /= k[i]
+        else:
+            values[i] = np.NaN
+    return time, values
