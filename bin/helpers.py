@@ -16,10 +16,10 @@ def binary_search(x, arr):
     b = len(arr) - 1
     while a < b:
         m = floor((a + b) / 2)
-        if arr[m + 1] < x:
+        if arr[m + 1] <= x:
             a = m + 1
         elif arr[m] > x:
-            b = m - 1
+            b = m
         else:
             return m
     return -1
