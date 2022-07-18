@@ -1,6 +1,6 @@
 from numba import njit
 import numpy as np
-from bin.rates import always_down
+from bin.rates import sigmoid
 
 state_init = np.ones(100)
 N = len(state_init)
@@ -28,7 +28,7 @@ def energy(state, time):
 @njit(nogil=True)
 def decide(state, time):
     nstate = swap(state, np.random.randint(N))
-    r, R = always_down(beta(time) * (energy(nstate, time) - energy(state, time)))
+    r, R = sigmoid(beta(time) * (energy(nstate, time) - energy(state, time)))
     u = 1 - np.random.random()
     dt = (np.log(1 / u) * rate_constant / R) / N
     if np.random.uniform(0, R) <= r:
@@ -55,4 +55,4 @@ def h(time):
 
 @njit(nogil=True)
 def beta(time):
-    return 1.7
+    return 1
