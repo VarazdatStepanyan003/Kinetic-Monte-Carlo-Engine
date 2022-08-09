@@ -25,6 +25,12 @@ def observables(state, time):
 
 @njit(nogil=True)
 def decide(state, time):
+    return rejection_kmc(state, time)
+    # return rejection_free_kmc(state, time)
+
+
+@njit(nogil=True)
+def rejection_free_kmc(state, time):
     S, I, R = observables(state, time)
     if R == 1 or I == 0:
         return False, state, 0
@@ -45,6 +51,27 @@ def decide(state, time):
     nstate[j] += 1
     u = 1 - np.random.random()
     dt = np.log(1 / u) / rates[N - 1]
+    return True, nstate, dt
+
+
+@njit(nogil=True)
+def rejection_kmc(state, time):
+    S, I, R = observables(state, time)
+    if R == 1 or I == 0:
+        return False, state, 0
+    i = np.random.randint(0, N)
+    dr = 0
+    if state[i] == 0:
+        dr = I * S * alpha(time)
+    elif state[i] == 1:
+        dr = I * beta(time)
+    r0 = max(I * S * alpha(time), I * beta(time))
+    if dr == 0 or np.random.random() > dr / r0:
+        return False, state, 0
+    nstate = np.copy(state)
+    nstate[i] += 1
+    u = 1 - np.random.random()
+    dt = np.log(1 / u) / r0 / N / (1 - R)
     return True, nstate, dt
 
 
