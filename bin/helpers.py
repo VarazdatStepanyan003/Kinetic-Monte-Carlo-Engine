@@ -36,3 +36,12 @@ def interpolate(y):
     y_new = np.copy(y)
     y_new[nans] = np.interp(x(nans), x(~nans), y_new[~nans])
     return y_new
+
+
+@njit(nogil=True)
+def fill(y):
+    y_n = np.copy(y)
+    for i in range(len(y)):
+        if y_n[i] == np.NaN:
+            y_n[i] = y[i - 1]
+    return y_n

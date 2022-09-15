@@ -14,7 +14,7 @@ def simulate(n_of_steps, max_time):
     observables = np.zeros((n_of_steps + 1, system.n_of_observables))
     observables[0] = system.observables(np.copy(state), 0)
     for i in range(1, n_of_steps + 1):
-        if time[i - 1] >= max_time:
+        if (not max_time == -1) and time[i - 1] >= max_time:
             observables[i] = observables[i - 1]
             time[i] = time[i - 1]
             continue
@@ -38,7 +38,7 @@ def simulate_keepstate(n_of_steps, max_time):
     states = np.zeros((n_of_steps + 1, system_size))
     states[0] = np.copy(state)
     for i in range(1, n_of_steps + 1):
-        if time[i - 1] >= max_time:
+        if (not max_time == -1) and time[i - 1] >= max_time:
             observables[i] = observables[i - 1]
             time[i] = time[i - 1]
             state[i] = state[i - 1]
@@ -65,6 +65,8 @@ def many_simulate(n_of_steps, max_time, n_of_repetitions):
 
 @njit(nogil=True)
 def smooth(max_time, dt, times, valuess):
+    if max_time == -1:
+        max_time = np.max(times[:, len(times[0]) - 1])
     time = np.arange(0, max_time + dt, dt)
     values = np.zeros(len(time))
     k = np.zeros(len(time))
