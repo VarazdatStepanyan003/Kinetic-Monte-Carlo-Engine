@@ -10,7 +10,7 @@ system = import_module(sys_name + ".system")
 @njit(nogil=True)
 def simulate(n_of_steps, max_time):
     time = np.zeros(n_of_steps + 1)
-    state = np.copy(system.state_init)
+    state = system.state_init()
     observables = np.zeros((n_of_steps + 1, system.n_of_observables))
     observables[0] = system.observables(np.copy(state), 0)
     for i in range(1, n_of_steps + 1):
@@ -31,7 +31,7 @@ def simulate(n_of_steps, max_time):
 @njit(nogil=True)
 def simulate_keepstate(n_of_steps, max_time):
     time = np.zeros(n_of_steps + 1)
-    state = np.copy(system.state_init)
+    state = system.state_init()
     observables = np.zeros((n_of_steps + 1, system.n_of_observables))
     observables[0] = system.observables(np.copy(state), 0)
     system_size = len(state)

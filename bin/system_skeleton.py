@@ -1,8 +1,12 @@
 from numba import njit
 
-state_init = None  # array of numbers
 rate_constant = None  # number
 n_of_observables = None  # number of observables
+
+
+@njit(nogil=True)
+def state_init():
+    return None  # the initial state
 
 
 @njit(nogil=True)

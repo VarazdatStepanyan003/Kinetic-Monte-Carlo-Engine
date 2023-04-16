@@ -2,10 +2,14 @@ from numba import njit
 import numpy as np
 from bin.rates import sigmoid
 
-state_init = np.ones(100)
-N = len(state_init)
+N = 100
 rate_constant = 0.1
 n_of_observables = 2
+
+
+@njit(nogil=True)
+def state_init():
+    return np.ones(N)
 
 
 @njit(nogil=True)

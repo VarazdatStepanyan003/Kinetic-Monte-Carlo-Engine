@@ -2,12 +2,17 @@ from numba import njit
 import numpy as np
 from bin.helpers import binary_search
 
-state_init = np.zeros(100)
-N = len(state_init)
-for i in range(N):
-    if np.random.random() < 0.05:
-        state_init[i] = 1
+N = 100
 n_of_observables = 3
+
+
+@njit(nogil=True)
+def state_init():
+    state_init = np.zeros(100)
+    for i in range(N):
+        if np.random.random() < 0.05:
+            state_init[i] = 1
+    return state_init
 
 
 @njit(nogil=True)
