@@ -55,7 +55,7 @@ def rejection_free_kmc(state, time):
     nstate = np.copy(state)
     nstate[j] += 1
     u = 1 - np.random.random()
-    dt = np.log(1 / u) / rates[N - 1]
+    dt = np.log(1 / u) / rates[N]
     return True, nstate, dt
 
 
@@ -71,12 +71,12 @@ def rejection_kmc(state, time):
     elif state[i] == 1:
         dr = I * beta(time)
     r0 = max(I * S * alpha(time), I * beta(time))
+    u = 1 - np.random.random()
+    dt = np.log(1 / u) / r0 / N
     if dr == 0 or np.random.random() > dr / r0:
-        return False, state, 0
+        return False, state, dt
     nstate = np.copy(state)
     nstate[i] += 1
-    u = 1 - np.random.random()
-    dt = np.log(1 / u) / r0 / N / (1 - R)
     return True, nstate, dt
 
 

@@ -21,6 +21,8 @@ def binary_search(x, arr):
         elif arr[m] > x:
             b = m
         else:
+            while m > 0 and arr[m - 1] == x:
+                m -= 1
             return m
     return -1
 
