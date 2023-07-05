@@ -1,27 +1,24 @@
 from numba import njit, prange
 import numpy as np
-from config import sys_name
+from config import SYSTEM
 from bin.helpers import binary_search
-from importlib import import_module
-
-system = import_module(sys_name + ".system")
 
 
 @njit(nogil=True)
 def simulate(n_of_steps, max_time):
     time = np.zeros(n_of_steps + 1)
-    state = system.state_init()
-    observables = np.zeros((n_of_steps + 1, system.n_of_observables))
-    observables[0] = system.observables(np.copy(state), 0)
+    state = SYSTEM.state_init()
+    observables = np.zeros((n_of_steps + 1, SYSTEM.n_of_observables))
+    observables[0] = SYSTEM.observables(np.copy(state), 0)
     for i in range(1, n_of_steps + 1):
         if (not max_time == -1) and time[i - 1] >= max_time:
             observables[i] = observables[i - 1]
             time[i] = time[i - 1]
             continue
-        d, n_state, dt = system.decide(np.copy(state), time[i])
+        d, n_state, dt = SYSTEM.decide(np.copy(state), time[i])
         if d:
             state = np.copy(n_state)
-            observables[i] = system.observables(np.copy(state), time[i])
+            observables[i] = SYSTEM.observables(np.copy(state), time[i])
         else:
             observables[i] = observables[i - 1]
         time[i] = time[i - 1] + dt
@@ -31,11 +28,11 @@ def simulate(n_of_steps, max_time):
 @njit(nogil=True)
 def simulate_keepstate(n_of_steps, max_time):
     time = np.zeros(n_of_steps + 1)
-    state = system.state_init()
-    observables = np.zeros((n_of_steps + 1, system.n_of_observables))
-    observables[0] = system.observables(np.copy(state), 0)
-    system_size = len(state)
-    states = np.zeros((n_of_steps + 1, system_size))
+    state = SYSTEM.state_init()
+    observables = np.zeros((n_of_steps + 1, SYSTEM.n_of_observables))
+    observables[0] = SYSTEM.observables(np.copy(state), 0)
+    SYSTEM_size = len(state)
+    states = np.zeros((n_of_steps + 1, SYSTEM_size))
     states[0] = np.copy(state)
     for i in range(1, n_of_steps + 1):
         if (not max_time == -1) and time[i - 1] >= max_time:
@@ -43,10 +40,10 @@ def simulate_keepstate(n_of_steps, max_time):
             time[i] = time[i - 1]
             state[i] = state[i - 1]
             continue
-        d, n_state, dt = system.decide(np.copy(state), time[i])
+        d, n_state, dt = SYSTEM.decide(np.copy(state), time[i])
         if d:
             state = np.copy(n_state)
-            observables[i] = system.observables(np.copy(state), time[i])
+            observables[i] = SYSTEM.observables(np.copy(state), time[i])
             states[i] = np.copy(state)
         else:
             observables[i] = observables[i - 1]
@@ -57,7 +54,7 @@ def simulate_keepstate(n_of_steps, max_time):
 @njit(parallel=True)
 def many_simulate(n_of_steps, max_time, n_of_repetitions):
     times = np.zeros((n_of_repetitions, n_of_steps + 1))
-    observabless = np.zeros((n_of_repetitions, n_of_steps + 1, system.n_of_observables))
+    observabless = np.zeros((n_of_repetitions, n_of_steps + 1, SYSTEM.n_of_observables))
     for i in prange(n_of_repetitions):
         times[i], observabless[i] = simulate(n_of_steps, max_time)
     return times, observabless

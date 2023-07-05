@@ -3,6 +3,13 @@ from math import floor
 import numpy as np
 
 
+def var_input(prompt, default, dtype):
+    c = input(prompt + "[" + str(default) + "]" ": ")
+    if c == '':
+        return default
+    return dtype(c)
+
+
 @njit(nogil=True)
 def kron_delta(a, b):
     if a == b:
