@@ -3,7 +3,10 @@ from bin.helpers import var_input
 c = input("Do you wish to input bulk([Y]/N): ")
 print()
 if c == '' or c == "Y" or c == "y":
-    c = input("Please input 8 variables: ").split(",")
+    c = input("Please input 8 variables: ")
+    if c == '':
+        c = "100,5,1,0.1,128,25000,300,1"
+    c = c.split(",")
     if len(c) != 8:
         print("Illegal Value")
         exit(-1)
@@ -35,4 +38,3 @@ else:
     NSTEPS = var_input("Number of Steps", 25000, int)
     MAXTIME = var_input("Maximum Simulation Time", 300, float)
     DT = var_input("Final Count Time Step", 1, float)
-# 100,7,0.1,1,128,50000,-1,0.1

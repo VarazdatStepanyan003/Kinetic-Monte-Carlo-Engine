@@ -6,9 +6,9 @@ from config import INPUTS
 n_of_observables = 3
 
 
-@njit(nogil=True)
+@njit("i4[:]()",nogil=True)
 def state_init():
-    state_init = np.zeros(100)
+    state_init = np.zeros(100, dtype=np.int32)
     for i in range(INPUTS.SIZE):
         if np.random.random() < INPUTS.INFPROB:
             state_init[i] = 1

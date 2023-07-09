@@ -10,14 +10,14 @@ def var_input(prompt, default, dtype):
     return dtype(c)
 
 
-@njit(nogil=True)
+@njit(["i4(i4, i4)", "i4(f8, f8)"], nogil=True)
 def kron_delta(a, b):
     if a == b:
         return 1
     return 0
 
 
-@njit(nogil=True)
+@njit("i4(f8, f8[:])", nogil=True)
 def binary_search(x, arr):
     a = 0
     b = len(arr) - 1
@@ -34,20 +34,21 @@ def binary_search(x, arr):
     return -1
 
 
-@njit(nogil=True)
+@njit("b1[:](f8[:])", nogil=True)
 def nan_helper(y):
-    return np.isnan(y), lambda z: z.nonzero()[0]
+    return np.isnan(y)
 
 
-@njit(nogil=True)
+@njit("f8[:](f8[:])", nogil=True)
 def interpolate(y):
-    nans, x = nan_helper(y)
+    nans = nan_helper(y)
+    x = lambda z: z.nonzero()[0]
     y_new = np.copy(y)
     y_new[nans] = np.interp(x(nans), x(~nans), y_new[~nans])
     return y_new
 
 
-@njit(nogil=True)
+@njit("f8[:](f8[:])", nogil=True)
 def fill(y):
     y_n = np.copy(y)
     for i in range(len(y)):

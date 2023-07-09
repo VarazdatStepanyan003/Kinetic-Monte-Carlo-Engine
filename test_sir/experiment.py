@@ -5,7 +5,7 @@ from numba import njit
 from config import INPUTS
 
 
-@njit(nogil=True)
+@njit("Tuple((f8[:], f8[:], f8[:], f8[:]))()", nogil=True)
 def run():
     times, observabless = many_simulate(n_of_steps=INPUTS.NSTEPS, max_time=INPUTS.MAXTIME,
                                         n_of_repetitions=INPUTS.NREPETITIONS)

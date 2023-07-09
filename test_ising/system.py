@@ -7,12 +7,12 @@ rate_constant = 0.1
 n_of_observables = 2
 
 
-@njit(nogil=True)
+@njit("i4[:]()", nogil=True)
 def state_init():
-    return np.ones(INPUTS.SIZE)
+    return np.ones(INPUTS.SIZE, dtype=np.int32)
 
 
-@njit(nogil=True)
+@njit("Tuple((f8, f8))(i4[:], f8)", nogil=True)
 def observables(state, time):
     m = np.mean(state)
     e = 0
@@ -21,7 +21,22 @@ def observables(state, time):
     return m, e / INPUTS.SIZE
 
 
-@njit(nogil=True)
+@njit("f8(f8)", nogil=True)
+def J(time):
+    return 1
+
+
+@njit("f8(f8)", nogil=True)
+def h(time):
+    return 0.1
+
+
+@njit("f8(f8)", nogil=True)
+def beta(time):
+    return INPUTS.BETA
+
+
+@njit("f8(i4[:], f8)", nogil=True)
 def energy(state, time):
     s = 0
     for i in range(INPUTS.SIZE):
@@ -29,7 +44,14 @@ def energy(state, time):
     return s
 
 
-@njit(nogil=True)
+@njit("i4[:](i4[:], i4)", nogil=True)
+def swap(state, index):
+    nstate = np.copy(state)
+    nstate[index] *= -1
+    return nstate
+
+
+@njit("Tuple((b1, i4[:], f8))(i4[:], f8)", nogil=True)
 def decide(state, time):
     nstate = swap(state, np.random.randint(INPUTS.SIZE))
     r, R = sigmoid(beta(time) * (energy(nstate, time) - energy(state, time)))
@@ -38,25 +60,3 @@ def decide(state, time):
     if np.random.uniform(0, R) <= r:
         return True, nstate, dt
     return False, state, dt
-
-
-@njit(nogil=True)
-def swap(state, index):
-    nstate = np.copy(state)
-    nstate[index] *= -1
-    return nstate
-
-
-@njit(nogil=True)
-def J(time):
-    return 1
-
-
-@njit(nogil=True)
-def h(time):
-    return 0.1
-
-
-@njit(nogil=True)
-def beta(time):
-    return INPUTS.BETA

@@ -2,7 +2,7 @@ from numba import njit
 # from engine import ...
 
 
-@njit(nogil=True)
+@njit("Tuple((RESULT OF EXPERIMENT TYPE))()", nogil=True)
 def run():
     return None  # result of experiment
 
