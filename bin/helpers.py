@@ -1,4 +1,4 @@
-from numba import njit
+from numba import njit, i4, f8, b1
 from math import floor
 import numpy as np
 
@@ -10,14 +10,14 @@ def var_input(prompt, default, dtype):
     return dtype(c)
 
 
-@njit(["i4(i4, i4)", "i4(f8, f8)"], nogil=True)
+@njit([i4(i4, i4), i4(f8, f8)], nogil=True)
 def kron_delta(a, b):
     if a == b:
         return 1
     return 0
 
 
-@njit("i4(f8, f8[:])", nogil=True)
+@njit(i4(f8, f8[:]), nogil=True)
 def binary_search(x, arr):
     a = 0
     b = len(arr) - 1
@@ -34,12 +34,12 @@ def binary_search(x, arr):
     return -1
 
 
-@njit("b1[:](f8[:])", nogil=True)
+@njit(b1[:](f8[:]), nogil=True)
 def nan_helper(y):
     return np.isnan(y)
 
 
-@njit("f8[:](f8[:])", nogil=True)
+@njit(f8[:](f8[:]), nogil=True)
 def interpolate(y):
     nans = nan_helper(y)
     x = lambda z: z.nonzero()[0]
@@ -48,7 +48,7 @@ def interpolate(y):
     return y_new
 
 
-@njit("f8[:](f8[:])", nogil=True)
+@njit(f8[:](f8[:]), nogil=True)
 def fill(y):
     y_n = np.copy(y)
     for i in range(len(y)):

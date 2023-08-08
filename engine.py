@@ -1,10 +1,11 @@
-from numba import njit, prange
+from numba import njit, prange, f8, i4
+from numba import types
 import numpy as np
 from config import SYSTEM
 from bin.helpers import binary_search
 
 
-@njit("Tuple((f8[:], f8[:,:]))(i4, f8)", nogil=True)
+@njit(types.containers.Tuple((f8[:], f8[:,:]))(i4, f8), nogil=True)
 def simulate(n_of_steps, max_time):
     time = np.zeros(n_of_steps + 1)
     state = SYSTEM.state_init()
@@ -25,7 +26,7 @@ def simulate(n_of_steps, max_time):
     return time, observables
 
 
-@njit("Tuple((f8[:], f8[:,:], i4[:,:]))(i4, f8)", nogil=True)
+@njit(types.containers.Tuple((f8[:], f8[:,:], i4[:,:]))(i4, f8), nogil=True)
 def simulate_keepstate(n_of_steps, max_time):
     time = np.zeros(n_of_steps + 1)
     state = SYSTEM.state_init()
@@ -52,7 +53,7 @@ def simulate_keepstate(n_of_steps, max_time):
     return time, observables, states
 
 
-@njit("Tuple((f8[:,:], f8[:,:,:]))(i4, f8, i4)", parallel=True, nogil=True)
+@njit(types.containers.Tuple((f8[:,:], f8[:,:,:]))(i4, f8, i4), parallel=True, nogil=True)
 def many_simulate(n_of_steps, max_time, n_of_repetitions):
     times = np.zeros((n_of_repetitions, n_of_steps + 1))
     observabless = np.zeros((n_of_repetitions, n_of_steps + 1, SYSTEM.n_of_observables))
@@ -61,7 +62,7 @@ def many_simulate(n_of_steps, max_time, n_of_repetitions):
     return times, observabless
 
 
-@njit("Tuple((f8[:], f8[:]))(f8, f8, f8[:,:], f8[:,:])", nogil=True)
+@njit(types.containers.Tuple((f8[:], f8[:]))(f8, f8, f8[:,:], f8[:,:]), nogil=True)
 def smooth(max_time, dt, times, valuess):
     if max_time == -1:
         max_time = np.max(times[:, len(times[0]) - 1])

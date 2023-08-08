@@ -1,4 +1,4 @@
-from numba import njit
+from numba import njit, i4
 import numpy as np
 from bin.helpers import binary_search
 from config import INPUTS
@@ -6,7 +6,7 @@ from config import INPUTS
 n_of_observables = 3
 
 
-@njit("i4[:]()",nogil=True)
+@njit(i4[:](), nogil=True)
 def state_init():
     state_init = np.zeros(100, dtype=np.int32)
     for i in range(INPUTS.SIZE):
