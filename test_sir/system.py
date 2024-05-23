@@ -8,7 +8,7 @@ n_of_observables = 3
 
 @njit(i4[:](), nogil=True)
 def state_init():
-    state_init = np.zeros(100, dtype=np.int32)
+    state_init = np.zeros(INPUTS.SIZE, dtype=np.int32)
     for i in range(INPUTS.SIZE):
         if np.random.random() < INPUTS.INFPROB:
             state_init[i] = 1
@@ -37,14 +37,14 @@ def decide(state, time):
 @njit(nogil=True)
 def rejection_free_kmc(state, time):
     S, I, R = observables(state, time)
-    if R == 1 or I == 0:
+    if np.isclose(R, 1) or np.isclose(I, 0):
         return False, state, 0
     rates = np.zeros(INPUTS.SIZE + 1)
     for i in range(1, INPUTS.SIZE + 1):
         if state[i - 1] == 0:
-            dr = I * S * alpha(time)
+            dr = S * alpha(time)
         elif state[i - 1] == 1:
-            dr = I * beta(time)
+            dr = beta(time)
         else:
             dr = 0
         rates[i] = rates[i - 1] + dr
@@ -55,24 +55,24 @@ def rejection_free_kmc(state, time):
     nstate = np.copy(state)
     nstate[j] += 1
     u = 1 - np.random.random()
-    dt = np.log(1 / u) / rates[INPUTS.SIZE]
+    dt = -np.log(u) / rates[INPUTS.SIZE]
     return True, nstate, dt
 
 
 @njit(nogil=True)
 def rejection_kmc(state, time):
     S, I, R = observables(state, time)
-    if R == 1 or I == 0:
+    if np.isclose(R, 1) or np.isclose(I, 0):
         return False, state, 0
     i = np.random.randint(0, INPUTS.SIZE)
     dr = 0
     if state[i] == 0:
-        dr = I * S * alpha(time)
+        dr = I * alpha(time)
     elif state[i] == 1:
-        dr = I * beta(time)
-    r0 = max(I * S * alpha(time), I * beta(time))
+        dr = beta(time)
+    r0 = max(I * alpha(time), beta(time))
     u = 1 - np.random.random()
-    dt = np.log(1 / u) / r0 / INPUTS.SIZE
+    dt = -np.log(u) / r0 / INPUTS.SIZE
     if dr == 0 or np.random.random() > dr / r0:
         return False, state, dt
     nstate = np.copy(state)

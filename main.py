@@ -1,7 +1,7 @@
-from config import EXPERIMENT
+from config import run, post
 from time import time as current_time
 
 start_time = current_time()
-res = EXPERIMENT.run()
-print("Simulation Runtime (s): ", current_time() - start_time)
-EXPERIMENT.post(res)
+res = run()
+print("Runtime (s): ", current_time() - start_time)
+post(res)

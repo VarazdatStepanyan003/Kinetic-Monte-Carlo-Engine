@@ -24,9 +24,25 @@ if "inputs.py" in os.listdir(os.path.join(sys_name)):
     print()
     INPUTS = import_module(sys_name + ".inputs")
 
-SYSTEM = import_module(sys_name + ".system")
-EXPERIMENT = import_module(sys_name + ".experiment")
+if "analytical.py" in os.listdir(os.path.join(sys_name)):
+    c = input("Do you wish to simulate([Y]/N): ")
+    if c == '' or c == "Y" or c == "y":
+        state_init = import_module(sys_name + ".system").state_init
+        decide = import_module(sys_name + ".system").decide
+        calc_observables = import_module(sys_name + ".system").observables
+        n_of_observables = import_module(sys_name + ".system").n_of_observables
 
-print()
-print("Simulation Initialization Complete")
-print()
+        run = import_module(sys_name + ".experiment").run
+        post = import_module(sys_name + ".experiment").post
+
+
+        print()
+        print("Simulation Initialization Complete")
+        print()
+    elif c != 'N' and c != 'n':
+        print('Illegal Value')
+        exit(-1)
+    else:
+        run = import_module(sys_name + ".analytical").run
+        post = import_module(sys_name + ".analytical").post
+

@@ -1,25 +1,25 @@
 from numba import njit, prange, f8, i4
 from numba import types
 import numpy as np
-from config import SYSTEM
+from config import state_init, decide, calc_observables, n_of_observables
 from bin.helpers import binary_search
 
 
 @njit(types.containers.Tuple((f8[:], f8[:,:]))(i4, f8), nogil=True)
 def simulate(n_of_steps, max_time):
     time = np.zeros(n_of_steps + 1)
-    state = SYSTEM.state_init()
-    observables = np.zeros((n_of_steps + 1, SYSTEM.n_of_observables))
-    observables[0] = SYSTEM.observables(np.copy(state), 0)
+    state = state_init()
+    observables = np.zeros((n_of_steps + 1, n_of_observables))
+    observables[0] = calc_observables(np.copy(state), 0)
     for i in range(1, n_of_steps + 1):
         if (not max_time == -1) and time[i - 1] >= max_time:
             observables[i] = observables[i - 1]
             time[i] = time[i - 1]
             continue
-        d, n_state, dt = SYSTEM.decide(np.copy(state), time[i])
+        d, n_state, dt = decide(np.copy(state), time[i])
         if d:
             state = np.copy(n_state)
-            observables[i] = SYSTEM.observables(np.copy(state), time[i])
+            observables[i] = calc_observables(np.copy(state), time[i])
         else:
             observables[i] = observables[i - 1]
         time[i] = time[i - 1] + dt
@@ -29,9 +29,9 @@ def simulate(n_of_steps, max_time):
 @njit(types.containers.Tuple((f8[:], f8[:,:], i4[:,:]))(i4, f8), nogil=True)
 def simulate_keepstate(n_of_steps, max_time):
     time = np.zeros(n_of_steps + 1)
-    state = SYSTEM.state_init()
-    observables = np.zeros((n_of_steps + 1, SYSTEM.n_of_observables))
-    observables[0] = SYSTEM.observables(np.copy(state), 0)
+    state = state_init()
+    observables = np.zeros((n_of_steps + 1, n_of_observables))
+    observables[0] = calc_observables(np.copy(state), 0)
     SYSTEM_size = len(state)
     states = np.zeros((n_of_steps + 1, SYSTEM_size), dtype=np.int32)
     states[0] = np.copy(state)
@@ -41,10 +41,10 @@ def simulate_keepstate(n_of_steps, max_time):
             time[i] = time[i - 1]
             state[i] = state[i - 1]
             continue
-        d, n_state, dt = SYSTEM.decide(np.copy(state), time[i])
+        d, n_state, dt = decide(np.copy(state), time[i])
         if d:
             state = np.copy(n_state)
-            observables[i] = SYSTEM.observables(np.copy(state), time[i])
+            observables[i] = calc_observables(np.copy(state), time[i])
             states[i] = np.copy(state)
         else:
             observables[i] = observables[i - 1]
@@ -56,7 +56,7 @@ def simulate_keepstate(n_of_steps, max_time):
 @njit(types.containers.Tuple((f8[:,:], f8[:,:,:]))(i4, f8, i4), parallel=True, nogil=True)
 def many_simulate(n_of_steps, max_time, n_of_repetitions):
     times = np.zeros((n_of_repetitions, n_of_steps + 1))
-    observabless = np.zeros((n_of_repetitions, n_of_steps + 1, SYSTEM.n_of_observables))
+    observabless = np.zeros((n_of_repetitions, n_of_steps + 1, n_of_observables))
     for i in prange(n_of_repetitions):
         times[i], observabless[i] = simulate(n_of_steps, max_time)
     return times, observabless
