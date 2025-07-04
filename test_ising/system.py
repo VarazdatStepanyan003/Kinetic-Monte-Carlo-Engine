@@ -4,7 +4,7 @@ import numpy as np
 from bin.rates import sigmoid
 from config import INPUTS
 
-rate_constant = 0.1
+inverse_rate_constant = 0.1
 n_of_observables = 2
 
 
@@ -57,7 +57,7 @@ def decide(state, time):
     nstate = swap(state, np.random.randint(INPUTS.SIZE))
     r, R = sigmoid(beta(time) * (energy(nstate, time) - energy(state, time)))
     u = 1 - np.random.random()
-    dt = (np.log(1 / u) * rate_constant / R) / INPUTS.SIZE
+    dt = (np.log(1 / u) * inverse_rate_constant / R) / INPUTS.SIZE
     if np.random.uniform(0, R) <= r:
         return True, nstate, dt
     return False, state, dt
